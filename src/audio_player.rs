@@ -21,6 +21,9 @@ impl AudioPlayer {
         println!("number of tracks:{}",self.sink.len());
         self.sink.play();
     }
+    pub fn pause_sink(self:&Self) {
+        self.sink.pause();
+    }
     //this func adds a audio file from a given path
     pub fn add_song_from_path(self:&Self,path: String) {
         let file = match file_io::load_file(path) {
@@ -38,7 +41,11 @@ impl AudioPlayer {
             }
         };
         println!("should have added new audio source");
+        if self.sink.len() == 0 {
+            self.sink.pause();
+        }
         self.sink.append(decoder);
+
     }
     pub fn queue_len(&self) -> usize{
         self.sink.len()

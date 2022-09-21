@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 rodio = "0.16.0"
-iui = "0.3.0"
+fltk = "1.3.15"
