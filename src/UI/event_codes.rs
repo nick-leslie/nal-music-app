@@ -1,2 +1,6 @@
-pub const PAUSE: i32 = 0;
-pub const PLAY: i32 = 1;
+#[derive(Clone,Copy)]
+pub enum Message {
+    PLAY,
+    PAUSE,
+    SECOND_ELAPSED,
+}
