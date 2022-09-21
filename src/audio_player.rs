@@ -3,7 +3,7 @@ use std::io::{BufReader, sink};
 use rodio::{Decoder, OutputStream, OutputStreamHandle};
 use crate::file_io;
 pub struct AudioPlayer {
-     pub sink:rodio::Sink,
+    sink:rodio::Sink,
     stream:OutputStream,
     stream_handle:OutputStreamHandle,
 }
