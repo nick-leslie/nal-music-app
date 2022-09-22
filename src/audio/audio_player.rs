@@ -76,6 +76,12 @@ impl AudioPlayer {
     pub fn duration_of_song(&self) -> Duration {
          self.duration_queue[0]
     }
+    pub fn current_time(&self) -> Duration {
+        self.current_duration
+    }
+    pub fn is_paused(&self) -> bool{
+        self.sink.is_paused()
+    }
     pub fn elapsed_second(&mut self) {
         self.current_duration += Duration::from_secs(1);
         println!("current second:{}",self.current_duration.as_secs());
