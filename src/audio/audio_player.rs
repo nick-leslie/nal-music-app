@@ -20,13 +20,11 @@ pub struct AudioPlayer {
     duration_queue: Vec<Duration>,
     current_duration:Duration,
     sender:SyncSender<Message>,
-    receiver:Receiver<Message>
 }
 
 impl AudioPlayer {
-    pub fn new() -> AudioPlayer {
+    pub fn new(sender:SyncSender<Message>) -> AudioPlayer {
         let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
-        let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         AudioPlayer {
             sink:rodio::Sink::try_new(&stream_handle).unwrap(),
             stream:_stream,
@@ -34,7 +32,6 @@ impl AudioPlayer {
             duration_queue:Vec::new(),
             current_duration:Duration::new(0,0),
             sender,
-            receiver
         }
     }
     pub fn play_sink(self:&Self) {
@@ -79,19 +76,13 @@ impl AudioPlayer {
     pub fn duration_of_song(&self) -> Duration {
          self.duration_queue[0]
     }
-    pub fn on_loop(&mut self) {
+    pub fn elapsed_second(&mut self) {
+        self.current_duration += Duration::from_secs(1);
+        println!("current second:{}",self.current_duration.as_secs());
         if self.sink.len() > self.duration_queue.len() {
             self.duration_queue.pop();
             self.current_duration = Duration::from_secs(0);
             println!("reseting")
-        }
-        match self.receiver.try_recv() {
-            //TODO takes a long time to update but hopefully that's just outputting and not actual lag
-            Ok(Message::SECOND_ELAPSED) => {
-                self.current_duration += Duration::from_secs(1);
-                println!("current duration {}",self.current_duration.as_secs())
-            },
-            _ => ()
         }
     }
 }
