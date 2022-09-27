@@ -11,7 +11,7 @@ use crate::file_io;
 use mp3_duration;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender, SyncSender};
-use crate::UI::event_codes::Message;
+use crate::event_codes::Message;
 
 pub struct AudioPlayer {
     sink:rodio::Sink,
