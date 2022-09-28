@@ -1,4 +1,5 @@
 use std::time::Duration;
+use iced::pane_grid;
 
 #[derive(Clone,Copy,Debug)]
 pub enum Message {
@@ -6,5 +7,5 @@ pub enum Message {
     PAUSE,
     SECOND_ELAPSED,
     NONE,
-    TICK
+    TICK,
 }

@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 rodio = "0.16.0"
 mp3-duration = "0.1.10"
-iced = { version = "0.4", default-features = false, features = ["glow","tokio"] }
+iced = { version = "0.4", default-features = false, features = ["glow","tokio","pure"] }
+iced_native = "0.5.1"

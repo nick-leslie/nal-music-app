@@ -5,6 +5,7 @@ use iced::{Application, Button, button, Column, Command, Element, executor, Prog
 use crate::{AudioPlayer, event_codes};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
+use crate::UI::file_widget::File_Graphic;
 
 pub struct Player {
     pub ap:AudioPlayer,
@@ -15,6 +16,7 @@ pub struct Player {
     play_button: button::State,
     pause_button: button::State,
 }
+
 
 
 impl Application for Player {
@@ -98,6 +100,7 @@ impl Application for Player {
                 .push(seconds_played_txt)
                 .push(duration_bar)
                 .push(total_duration_timer))
+            .push(File_Graphic::new("test".to_string()))
             .into()
     }
 }
