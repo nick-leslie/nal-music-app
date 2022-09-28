@@ -244,15 +244,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cmake"
-version = "0.1.48"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8ad8cef104ac57b68b89df3208164d228503abbdce70f6880ffa3d970e7443a"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "cocoa"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -269,15 +260,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cocoa-colors"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7fc3439406f349e0bc20d7de87314803378a535190d12e62991f7c8474d5296"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "cocoa-foundation"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -290,15 +272,6 @@ dependencies = [
  "foreign-types",
  "libc",
  "objc",
-]
-
-[[package]]
-name = "color-maps"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "120b737cc99b0d73bf0a9bfa6086e84c0bde3b955851f37f812865bc08b35feb"
-dependencies = [
- "lazy_static",
 ]
 
 [[package]]
@@ -567,50 +540,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b52c2ef4a78da0ba68fbe1fd920627411096d2ac478f7f4c9f3a54ba6705bade"
 dependencies = [
  "num-traits",
-]
-
-[[package]]
-name = "fltk"
-version = "1.3.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c42150a248ca6ed2ff82c1e60b000bd50ca3562ba0de74436661cbecbf843064"
-dependencies = [
- "bitflags",
- "crossbeam-channel",
- "fltk-sys",
- "once_cell",
- "paste",
- "ttf-parser",
-]
-
-[[package]]
-name = "fltk-grid"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4a76943e5cf89c412e9e9a56b95837d0a05e81833e1ab23ee84e1ddc3ec31ac"
-dependencies = [
- "fltk",
-]
-
-[[package]]
-name = "fltk-sys"
-version = "1.3.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5890f494b0c725c8222f2cf08b1a0f61ece9806bb61178655b356ae4f1e892c2"
-dependencies = [
- "cmake",
-]
-
-[[package]]
-name = "fltk-theme"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abee3d9b0ed8bd45d10e4cc279d757ce71c37224482e8377a99906f7be771266"
-dependencies = [
- "cocoa-colors",
- "color-maps",
- "fltk",
- "lazy_static",
 ]
 
 [[package]]
@@ -1270,9 +1199,6 @@ dependencies = [
 name = "nal-music-app"
 version = "0.1.0"
 dependencies = [
- "fltk",
- "fltk-grid",
- "fltk-theme",
  "iced",
  "mp3-duration",
  "rodio",
@@ -1616,12 +1542,6 @@ dependencies = [
  "smallvec",
  "windows-sys",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1de2e551fb905ac83f73f7aedf2f0cb4a0da7e35efa24a202a936269f1f18e1"
 
 [[package]]
 name = "peeking_take_while"
