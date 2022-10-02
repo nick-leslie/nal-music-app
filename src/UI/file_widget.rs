@@ -2,10 +2,10 @@ use std::borrow::BorrowMut;
 use std::fs;
 use std::fs::ReadDir;
 use std::path::Path;
-use iced::{Button, button, Color, Column, Element, Length};
+use iced::{Button, button, Color, Column, Element, Length, Scrollable};
 use iced::pure::row;
 use iced_native::Renderer;
-use iced_native::widget::{Image, Row, Text};
+use iced_native::widget::{Image, Row, Text,scrollable};
 use crate::event_codes::Message;
 use crate::file_io::is_song;
 
@@ -15,7 +15,8 @@ use crate::file_io::is_song;
 pub struct directory_graphic {
     current_path:String,
     current_dir: ReadDir,
-    files:Vec<File_Graphic>
+    files:Vec<File_Graphic>,
+    scroll_state:scrollable::State
 }
 
 impl directory_graphic {
@@ -34,7 +35,8 @@ impl directory_graphic {
         directory_graphic {
             current_path: path.clone(),
             current_dir: dir,
-            files
+            files,
+            scroll_state: Default::default()
         }
     }
     pub fn view(&mut self) -> Element<Message> {
@@ -44,6 +46,7 @@ impl directory_graphic {
         let mut col = Column::new().padding(10);
         let mut rows = Vec::new();
         let mut i:usize = 0;
+        
         for mut file in self.files.iter_mut(){
             if i % 5 == 0 {
                 rows.push( Some(Row::new().spacing(20)));
@@ -59,7 +62,8 @@ impl directory_graphic {
                 Some(r) => { col = col.push(r)}
             }
         }
-        col.into()
+        Scrollable::new(&mut self.scroll_state).push(col).into()
+
     }
     pub fn get_current_path(&self) -> String {
         self.current_path.clone()
@@ -102,7 +106,7 @@ impl File_Graphic {
 
     }
      pub fn view(&mut self) -> Element<Message> {
-        let filename_txt =Text::new(self.name.as_str()).size(40);
+        let filename_txt =Text::new(self.name.as_str()).size(10);
          let mut button_txt = Text::new("");
          if self.file_type == file_type::Dir {
               button_txt = Text::new("change directory");

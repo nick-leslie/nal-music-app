@@ -32,9 +32,6 @@ impl Application for Player {
     fn new(_flags: ()) -> (Player, Command<Self::Message>) {
         let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         let mut ap = AudioPlayer::new(sender.clone());
-        //ap.add_song_from_path("./demoMusic/afterHours.mp3".to_string());
-        //let song =Song::new(").unwrap();
-        //ap.add_song_from_path(./demoMusic/afterHours.mp3".to_string());
         (Player {
             ap,
             sender,
@@ -42,7 +39,7 @@ impl Application for Player {
             play_button: Default::default(),
             pause_button: Default::default(),
             step_back_button: Default::default(),
-            current_files: directory_graphic::new(".".to_string())
+            current_files: directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string())
         }, Command::none())
     }
 
@@ -74,7 +71,7 @@ impl Application for Player {
                 }
             }
             Message::FILE_INTERACTION(path) => {
-                //TODO refactor to work with why it dose nto want to leave the application
+                //TODO make it work with relative paths
                 if file_io::check_if_dir(path.clone()) == true {
                     self.current_files = directory_graphic::new(path.clone());
                 } else {
