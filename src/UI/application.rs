@@ -1,11 +1,13 @@
+use std::borrow::BorrowMut;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
 use iced::{Application, Button, button, Column, Command, Element, executor, ProgressBar, Row, Subscription, Text, time};
+use iced::pure::{column, row, scrollable};
 use crate::{AudioPlayer, event_codes};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
-use crate::UI::file_widget::File_Graphic;
+use crate::UI::file_widget::{directory_graphic, File_Graphic};
 
 pub struct Player {
     pub ap:AudioPlayer,
@@ -15,6 +17,8 @@ pub struct Player {
     // The local state of the two buttons
     play_button: button::State,
     pause_button: button::State,
+    current_dir_path: String,
+    current_files:directory_graphic
 }
 
 
@@ -27,7 +31,7 @@ impl Application for Player {
     fn new(_flags: ()) -> (Player, Command<Self::Message>) {
         let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         let mut ap = AudioPlayer::new(sender.clone());
-        ap.add_song_from_path("./demoMusic/3.mp3".to_string());
+        ap.add_song_from_path("./demoMusic/afterHours.mp3".to_string());
         //let song =Song::new(").unwrap();
         //ap.add_song_from_path(./demoMusic/afterHours.mp3".to_string());
         (Player {
@@ -35,7 +39,9 @@ impl Application for Player {
             sender,
             receiver,
             play_button: Default::default(),
-            pause_button: Default::default()
+            pause_button: Default::default(),
+            current_dir_path: "./demoMusic".to_string(),
+            current_files: directory_graphic::new("./src".to_string())
         }, Command::none())
     }
 
@@ -100,7 +106,8 @@ impl Application for Player {
                 .push(seconds_played_txt)
                 .push(duration_bar)
                 .push(total_duration_timer))
-            .push(File_Graphic::new("test".to_string()))
+            .push(self.current_files.veiw())
+            //.push(thing)
             .into()
     }
 }

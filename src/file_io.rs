@@ -13,24 +13,3 @@ pub fn load_file(path:String) -> Result<BufReader<File>,String> {
         }
     }
 }
-// pub fn load_dir_from_string(dir_path: String) {
-//     let mut paths = fs::read_dir(dir_path).unwrap();
-//
-//     // for path in paths {
-//     //     if path.as_ref().unwrap().file_type().unwrap().is_dir() {
-//     //         println!("{:?}", path.unwrap().file_name())
-//     //     }
-//     // }
-//     let what_r_u = paths.nth(1).unwrap().unwrap().file_name();
-//     println!("{:?}",what_r_u);
-//
-// }
-// pub fn load_dir_from_path(dir_path:&Path) {
-//     let paths = fs::read_dir(dir_path);
-//
-//     // for path in paths {
-//     //     if path.as_ref().unwrap().file_type().unwrap().is_dir() {
-//     //         println!("{:?}", path.unwrap().file_name())
-//     //     }
-//     // }
-// }
