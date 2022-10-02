@@ -7,6 +7,7 @@ use iced::pure::{column, row, scrollable};
 use crate::{AudioPlayer, event_codes, file_io};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
+use crate::file_io::{get_dir_parent, is_song};
 use crate::UI::file_widget::{directory_graphic, File_Graphic};
 
 pub struct Player {
@@ -17,6 +18,7 @@ pub struct Player {
     // The local state of the two buttons
     play_button: button::State,
     pause_button: button::State,
+    step_back_button:button::State,
     current_files:directory_graphic
 }
 
@@ -30,7 +32,7 @@ impl Application for Player {
     fn new(_flags: ()) -> (Player, Command<Self::Message>) {
         let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         let mut ap = AudioPlayer::new(sender.clone());
-        ap.add_song_from_path("./demoMusic/afterHours.mp3".to_string());
+        //ap.add_song_from_path("./demoMusic/afterHours.mp3".to_string());
         //let song =Song::new(").unwrap();
         //ap.add_song_from_path(./demoMusic/afterHours.mp3".to_string());
         (Player {
@@ -39,7 +41,8 @@ impl Application for Player {
             receiver,
             play_button: Default::default(),
             pause_button: Default::default(),
-            current_files: directory_graphic::new("./src".to_string())
+            step_back_button: Default::default(),
+            current_files: directory_graphic::new(".".to_string())
         }, Command::none())
     }
 
@@ -70,9 +73,14 @@ impl Application for Player {
 
                 }
             }
-            Message::CHANGE_DIRECTORY(path) => {
+            Message::FILE_INTERACTION(path) => {
+                //TODO refactor to work with why it dose nto want to leave the application
                 if file_io::check_if_dir(path.clone()) == true {
                     self.current_files = directory_graphic::new(path.clone());
+                } else {
+                    if is_song(path.clone()) {
+                        self.ap.add_song_from_path(path.clone())
+                    }
                 }
             }
             _ => ()
@@ -81,7 +89,7 @@ impl Application for Player {
     }
     fn subscription(&self) -> Subscription<Self::Message> {
         //this genrates a tic every 500 ms
-        iced::time::every(std::time::Duration::from_millis(500)).map(|_| {
+        iced::time::every(Duration::from_millis(500)).map(|_| {
             Message::TICK
         })
     }
@@ -92,24 +100,25 @@ impl Application for Player {
 
         // buttons
         let play_button = Button::new(&mut self.play_button, Text::new("play")).on_press(Message::PLAY);
-        let pause_buttion = Button::new(&mut self.pause_button, Text::new("pause")).on_press(Message::PAUSE);
+        let pause_button = Button::new(&mut self.pause_button, Text::new("pause")).on_press(Message::PAUSE);
         let current_song_text = Text::new(self.ap.get_current_song()).size(50);
         // duration bar row
         let seconds_played_txt = Text::new(self.ap.current_time().as_secs().to_string()).size(40);
         let duration_bar = ProgressBar::new(0.0..=self.ap.duration_of_song().as_secs() as f32, self.ap.current_time().as_secs() as f32);
         let total_duration_timer =Text::new(self.ap.duration_of_song().as_secs().to_string()).size(40);
-
+        let step_back_button = Button::new(&mut self.step_back_button,Text::new("step back")).on_press(Message::FILE_INTERACTION(get_dir_parent(self.current_files.get_current_path())));
 
         Column::new()
             .push(Row::new()
                 .push(play_button)
-                .push(pause_buttion)
+                .push(pause_button)
                 .push(current_song_text))
             .push(Row::new().padding([5, 5, 15, 15])
                 .push(seconds_played_txt)
                 .push(duration_bar)
                 .push(total_duration_timer))
-            .push(self.current_files.veiw())
+            .push(step_back_button)
+            .push(self.current_files.view())
             //.push(thing)
             .into()
     }

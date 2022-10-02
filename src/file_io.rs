@@ -20,3 +20,20 @@ pub fn check_if_dir(path:String) -> bool {
         Err(E) => false
     }
 }
+//TODO figure out how to step backwards from a relative path
+pub fn get_dir_parent(path:String) -> String{
+    let p =Path::new(path.as_str());
+    let parent_string = match p.parent() {
+        None => { "".parse().unwrap() }
+        Some(parent) => { parent.to_str().expect("failed to make string").parse().unwrap() }
+    };
+    parent_string
+}
+pub fn is_song(path:String) -> bool {
+    let potential_song = Path::new(path.as_str());
+    let is_song =
+        potential_song.is_file() &&
+        potential_song.extension().map(|e| e.to_str().unwrap() == "mp3").unwrap_or(false);
+
+    is_song
+}

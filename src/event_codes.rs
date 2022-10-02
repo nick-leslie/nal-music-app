@@ -9,6 +9,5 @@ pub enum Message {
     SECOND_ELAPSED,
     NONE,
     TICK,
-    CHANGE_DIRECTORY(String),
-    ADD_TO_PLAYLIST(String)
+    FILE_INTERACTION(String),
 }
