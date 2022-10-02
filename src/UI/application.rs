@@ -4,7 +4,7 @@ use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
 use iced::{Application, Button, button, Column, Command, Element, executor, ProgressBar, Row, Subscription, Text, time};
 use iced::pure::{column, row, scrollable};
-use crate::{AudioPlayer, event_codes};
+use crate::{AudioPlayer, event_codes, file_io};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
 use crate::UI::file_widget::{directory_graphic, File_Graphic};
@@ -17,7 +17,6 @@ pub struct Player {
     // The local state of the two buttons
     play_button: button::State,
     pause_button: button::State,
-    current_dir_path: String,
     current_files:directory_graphic
 }
 
@@ -40,7 +39,6 @@ impl Application for Player {
             receiver,
             play_button: Default::default(),
             pause_button: Default::default(),
-            current_dir_path: "./demoMusic".to_string(),
             current_files: directory_graphic::new("./src".to_string())
         }, Command::none())
     }
@@ -70,6 +68,11 @@ impl Application for Player {
                     }
                     Err(e) => ()
 
+                }
+            }
+            Message::CHANGE_DIRECTORY(path) => {
+                if file_io::check_if_dir(path.clone()) == true {
+                    self.current_files = directory_graphic::new(path.clone());
                 }
             }
             _ => ()
