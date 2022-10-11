@@ -2,7 +2,7 @@ use std::borrow::BorrowMut;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
-use iced::{Application, Button, button, Column, Command, Element, executor, pane_grid, PaneGrid, ProgressBar, Renderer, Row, Subscription, Text, time};
+use iced::{Application, Background, Button, button, Color, Column, Command, container, Container, Element, executor, Length, pane_grid, PaneGrid, ProgressBar, Renderer, Row, Subscription, Text, time};
 use iced::pane_grid::Content;
 use iced::pure::{column, row, scrollable, widget};
 use crate::{AudioPlayer, event_codes, file_io};
@@ -90,6 +90,16 @@ impl Application for Player {
                     }
                 }
             }
+            Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
+                self.panes.panes.resize(&split, ratio);
+            }
+            Message::PaneDragged(pane_grid::DragEvent::Dropped {
+                                     pane,
+                                     target,
+                                 }) => {
+                self.panes.panes.swap(&pane, &target);
+            }
+            Message::PaneDragged(_) => {}
             _ => ()
         }
         Command::none()
@@ -120,7 +130,7 @@ impl Application for Player {
 
 
 
-        Column::new()
+        let overall_col = Column::new()
             .push(Row::new()
                 .push(play_button)
                 .push(pause_button)
@@ -129,8 +139,23 @@ impl Application for Player {
                 .push(seconds_played_txt)
                 .push(duration_bar)
                 .push(total_duration_timer)).push(step_back_button)
-            .push(self.panes.view())
+            .push(self.panes.view());
             //.push(file_content)
+
+        Container::new(overall_col).width(Length::Fill)
+            .height(Length::Fill)
+            .padding(10)
             .into()
+    }
+}
+
+impl container::StyleSheet for Pane {
+    fn style(&self) -> container::Style {
+        container::Style {
+            background: Some(Background::Color(Color::from_rgb(1.0,1.0,1.0))),
+            border_width: 2.0,
+            border_color: Color::from_rgb(0.7, 0.7, 0.7),
+            ..Default::default()
+        }
     }
 }

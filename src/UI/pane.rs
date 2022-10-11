@@ -4,7 +4,7 @@ use std::ops::Deref;
 use std::thread::park_timeout;
 use iced::{Background, Color, Column, Container, container, Element, PaneGrid, Text};
 use iced::pane_grid::Content;
-use iced_native::Renderer;
+use iced_native::{Command, Renderer};
 use iced_native::user_interface::State;
 use iced_native::widget::pane_grid;
 use iced_native::widget::pane_grid::{Axis, state};
@@ -16,12 +16,10 @@ enum PaneState {
     filesPane,
 }
 //TODO find a more genaric way to do this that dose not have lifetimes
-struct potential_content {
+pub struct potential_content {
     dire_graphic:Option<directory_graphic>
 }
-//TODO just use an enum to decide what type of pane it is
 impl potential_content {
-    //TODO be able to view baced on what content is pressent
     pub fn view(&mut self) -> Element<Message> {
         let testing_text = Text::new("yeet".to_string()).size(40);
         match self.dire_graphic.as_mut() {
@@ -34,7 +32,7 @@ impl potential_content {
 }
 
 pub struct Pane {
-    panes: pane_grid::State<potential_content>,
+    pub panes: pane_grid::State<potential_content>,
     panes_created: usize,
 }
 
@@ -50,7 +48,6 @@ impl Pane {
             panes_created: 1
         }
     }
-    //TODO make it so panes can render all the stuff we need to render
     pub fn view(&mut self) -> Element<Message> {
         //let mut movedContent = Column::new();
         let pane_grid =
@@ -61,14 +58,20 @@ impl Pane {
                 .on_resize(10, Message::PaneResized);
         Column::new().push(pane_grid).into()
     }
-}
-impl container::StyleSheet for Pane {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(Color::from_rgb(1.0,1.0,1.0))),
-            border_width: 2.0,
-            border_color: Color::from_rgb(0.7, 0.7, 0.7),
-            ..Default::default()
+    fn update(&mut self, message:Message) {
+        match message {
+            Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
+                println!("gameing");
+                self.panes.resize(&split, ratio);
+            }
+            Message::PaneDragged(pane_grid::DragEvent::Dropped {
+                                 pane,
+                                 target,
+                             }) => {
+                self.panes.swap(&pane, &target);
+            }
+            Message::PaneDragged(_) => {}
+            _ => {}
         }
     }
 }
