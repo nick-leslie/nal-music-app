@@ -2,13 +2,16 @@ use std::borrow::BorrowMut;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
-use iced::{Application, Button, button, Column, Command, Element, executor, ProgressBar, Row, Subscription, Text, time};
-use iced::pure::{column, row, scrollable};
+use iced::{Application, Button, button, Column, Command, Element, executor, pane_grid, PaneGrid, ProgressBar, Renderer, Row, Subscription, Text, time};
+use iced::pane_grid::Content;
+use iced::pure::{column, row, scrollable, widget};
 use crate::{AudioPlayer, event_codes, file_io};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
 use crate::file_io::{get_dir_parent, is_song};
 use crate::UI::file_widget::{directory_graphic, File_Graphic};
+use iced_lazy::responsive;
+use crate::UI::pane::Pane;
 
 pub struct Player {
     pub ap:AudioPlayer,
@@ -19,10 +22,15 @@ pub struct Player {
     play_button: button::State,
     pause_button: button::State,
     step_back_button:button::State,
-    current_files:directory_graphic
+    current_files:directory_graphic,
+    panes:Pane
+    //pane_state: iced_native::widget::pane_grid::state::State<PaneState>,
 }
 
-
+enum PaneState {
+    SomePane,
+    AnotherKindOfPane,
+}
 
 impl Application for Player {
     type Executor = executor::Default;
@@ -32,6 +40,7 @@ impl Application for Player {
     fn new(_flags: ()) -> (Player, Command<Self::Message>) {
         let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         let mut ap = AudioPlayer::new(sender.clone());
+        let (mut pane_state,_)  = pane_grid::State::new(PaneState::SomePane);
         (Player {
             ap,
             sender,
@@ -39,7 +48,8 @@ impl Application for Player {
             play_button: Default::default(),
             pause_button: Default::default(),
             step_back_button: Default::default(),
-            current_files: directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string())
+            current_files: directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string()),
+            panes: Pane::new()
         }, Command::none())
     }
 
@@ -105,6 +115,11 @@ impl Application for Player {
         let total_duration_timer =Text::new(self.ap.duration_of_song().as_secs().to_string()).size(40);
         let step_back_button = Button::new(&mut self.step_back_button,Text::new("step back")).on_press(Message::FILE_INTERACTION(get_dir_parent(self.current_files.get_current_path())));
 
+        let file_content =  Element::from(Column::new().push(self.current_files.view()));
+
+
+
+
         Column::new()
             .push(Row::new()
                 .push(play_button)
@@ -113,10 +128,9 @@ impl Application for Player {
             .push(Row::new().padding([5, 5, 15, 15])
                 .push(seconds_played_txt)
                 .push(duration_bar)
-                .push(total_duration_timer))
-            .push(step_back_button)
-            .push(self.current_files.view())
-            //.push(thing)
+                .push(total_duration_timer)).push(step_back_button)
+            .push(self.panes.view())
+            //.push(file_content)
             .into()
     }
 }

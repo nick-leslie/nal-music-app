@@ -10,4 +10,6 @@ pub enum Message {
     NONE,
     TICK,
     FILE_INTERACTION(String),
+    PaneDragged(pane_grid::DragEvent),
+    PaneResized(pane_grid::ResizeEvent),
 }

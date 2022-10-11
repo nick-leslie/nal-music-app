@@ -1,6 +1,7 @@
 use std::borrow::BorrowMut;
 use std::fs;
 use std::fs::ReadDir;
+use std::io::Sink;
 use std::path::Path;
 use iced::{Button, button, Color, Column, Element, Length, Scrollable};
 use iced::pure::row;
@@ -10,6 +11,7 @@ use crate::event_codes::Message;
 use crate::file_io::is_song;
 
 //TODO refactor this to be the files pane
+
 
 #[derive(Debug)]
 pub struct directory_graphic {
@@ -46,7 +48,7 @@ impl directory_graphic {
         let mut col = Column::new().padding(10);
         let mut rows = Vec::new();
         let mut i:usize = 0;
-        
+
         for mut file in self.files.iter_mut(){
             if i % 5 == 0 {
                 rows.push( Some(Row::new().spacing(20)));
@@ -71,6 +73,7 @@ impl directory_graphic {
 }
 
 
+
 #[derive(Debug,Clone,PartialEq)]
 enum file_type {
     Dir,
@@ -86,7 +89,7 @@ pub struct File_Graphic {
 
 }
 
-
+//TODO make this have a  set size per item
 impl File_Graphic {
     pub fn new(name:String,path:String) -> File_Graphic {
         let ft = match is_song(path.clone()) {
@@ -105,6 +108,7 @@ impl File_Graphic {
     fn update(&mut self, message:Message) {
 
     }
+    //TODO make a set size for file element so we can dynamicly set the number of rows
      pub fn view(&mut self) -> Element<Message> {
         let filename_txt =Text::new(self.name.as_str()).size(10);
          let mut button_txt = Text::new("");
