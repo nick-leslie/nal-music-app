@@ -44,7 +44,7 @@ impl AudioPlayer {
     }
     //this func adds a audio file from a given path
     pub fn add_song_from_path(&mut self, path: String) {
-       self.add_song(Song::new(path).expect("failed to unwrap song"));
+        self.add_song(Song::new(path).expect("failed to unwrap song"));
     }
     pub fn add_song(&mut self,s:Song) {
 
@@ -92,7 +92,9 @@ impl AudioPlayer {
     pub fn is_paused(&self) -> bool{
         self.sink.is_paused()
     }
-
+    pub fn get_play_list(&mut self) -> Vec<Song>{
+        self.song_queue.clone()
+    }
     pub fn get_current_song(&self) -> &str {
         return if self.song_queue.len() > 0 {
             self.song_queue[0].get_song_name()

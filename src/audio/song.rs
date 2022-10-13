@@ -7,7 +7,7 @@ use std::time::Duration;
 use rodio::Decoder;
 use crate::file_io;
 use crate::file_io::load_file;
-
+#[derive(Clone)]
 pub struct Song {
     song_name:String,
     song_path:String,

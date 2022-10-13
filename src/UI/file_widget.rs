@@ -3,12 +3,13 @@ use std::fs;
 use std::fs::ReadDir;
 use std::io::Sink;
 use std::path::Path;
-use iced::{Button, button, Color, Column, Element, Length, Scrollable};
+use iced::{Button, button, Color, Column, Container, Element, Length, Scrollable};
 use iced::pure::row;
 use iced_native::Renderer;
 use iced_native::widget::{Image, Row, Text,scrollable};
+use crate::AudioPlayer;
 use crate::event_codes::Message;
-use crate::file_io::is_song;
+use crate::file_io::{get_dir_parent, is_song};
 
 //TODO refactor this to be the files pane
 
@@ -18,6 +19,7 @@ pub struct directory_graphic {
     current_path:String,
     current_dir: ReadDir,
     files:Vec<File_Graphic>,
+    step_back_button:button::State,
     scroll_state:scrollable::State
 }
 
@@ -38,10 +40,13 @@ impl directory_graphic {
             current_path: path.clone(),
             current_dir: dir,
             files,
+            step_back_button: Default::default(),
             scroll_state: Default::default()
         }
     }
+    //TODO work on choiseing the number of items displayed baced on size of pane
     pub fn view(&mut self) -> Element<Message> {
+        let step_back_button = Button::new(&mut self.step_back_button,Text::new("step back")).on_press(Message::FILE_INTERACTION(get_dir_parent(self.current_path.clone())));
         // I make multiple rows by using some to add rows to a vector
         //we need to do it this way because push takes ownership of the row
         //so we use cr to store the current row and then we move it back into the vector
@@ -50,7 +55,7 @@ impl directory_graphic {
         let mut i:usize = 0;
 
         for mut file in self.files.iter_mut(){
-            if i % 5 == 0 {
+            if i % 3 == 0 {
                 rows.push( Some(Row::new().spacing(20)));
             }
             let current_row = rows.len()-1;
@@ -64,7 +69,12 @@ impl directory_graphic {
                 Some(r) => { col = col.push(r)}
             }
         }
-        Scrollable::new(&mut self.scroll_state).push(col).into()
+
+        let file_zone = Scrollable::new(&mut self.scroll_state).push(col);
+        let final_content = Column::new()
+            .push(Row::new().push(step_back_button))
+            .push(file_zone);
+        final_content.into()
 
     }
     pub fn get_current_path(&self) -> String {
