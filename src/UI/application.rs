@@ -1,21 +1,28 @@
+use std::borrow::BorrowMut;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Duration;
-use iced::{Application, Button, button, Column, Command, Element, executor, ProgressBar, Row, Subscription, Text, time};
-use crate::{AudioPlayer, event_codes};
+use iced::{Application, Background, Button, button, Color, Column, Command, container, Container, Element, executor, Length, pane_grid, PaneGrid, ProgressBar, Renderer, Row, Subscription, Text, time};
+use iced::pane_grid::Content;
+use iced::pure::{column, row, scrollable, widget};
+use crate::{AudioPlayer, event_codes, file_io};
 use crate::audio::song::Song;
 use crate::event_codes::Message;
+use crate::file_io::{get_dir_parent, is_song};
+use crate::UI::file_widget::{directory_graphic, File_Graphic};
+use iced_lazy::responsive;
+use crate::UI::controls_widget::ControlPanel;
+use crate::UI::pane::Pane;
 
 pub struct Player {
     pub ap:AudioPlayer,
     sender:SyncSender<Message>,
     receiver:Receiver<Message>,
-
-    // The local state of the two buttons
-    play_button: button::State,
-    pause_button: button::State,
+    current_files:directory_graphic,
+    control_panel:ControlPanel,
+    panes:Pane
+    //pane_state: iced_native::widget::pane_grid::state::State<PaneState>,
 }
-
 
 impl Application for Player {
     type Executor = executor::Default;
@@ -25,15 +32,14 @@ impl Application for Player {
     fn new(_flags: ()) -> (Player, Command<Self::Message>) {
         let (sender, receiver): (SyncSender<Message>, Receiver<Message>)  = mpsc::sync_channel(100);
         let mut ap = AudioPlayer::new(sender.clone());
-        ap.add_song_from_path("./demoMusic/3.mp3".to_string());
-        //let song =Song::new(").unwrap();
-        //ap.add_song_from_path(./demoMusic/afterHours.mp3".to_string());
+        let pane = Pane::new(ap.get_play_list());
         (Player {
             ap,
             sender,
             receiver,
-            play_button: Default::default(),
-            pause_button: Default::default()
+            current_files: directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string()),
+            control_panel: ControlPanel::new(),
+            panes: pane
         }, Command::none())
     }
 
@@ -64,13 +70,46 @@ impl Application for Player {
 
                 }
             }
+            Message::FILE_INTERACTION(path) => {
+                //TODO make it work with relative paths
+                if file_io::check_if_dir(path.clone()) == true {
+                    //TODO this is bad for preformce I dont want to iterate every time I need the dir
+                    for panes_and_content in self.panes.panes.iter_mut() {
+                        if panes_and_content.1.change_dir(path.clone()) == true {
+                            break;
+                        }
+                    }
+                    self.current_files = directory_graphic::new(path.clone());
+                } else {
+                    if is_song(path.clone()) {
+                        self.ap.add_song_from_path(path.clone());
+                        //TODO fix this this is bad desine becuse what if you had 1 in 100 panes
+                        // //you can only get away with this cause its 2
+                        for panes_and_content in self.panes.panes.iter_mut() {
+                            if panes_and_content.1.update_playlist(&mut self.ap) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
+                self.panes.panes.resize(&split, ratio);
+            }
+            Message::PaneDragged(pane_grid::DragEvent::Dropped {
+                                     pane,
+                                     target,
+                                 }) => {
+                self.panes.panes.swap(&pane, &target);
+            }
+            Message::PaneDragged(_) => {}
             _ => ()
         }
         Command::none()
     }
     fn subscription(&self) -> Subscription<Self::Message> {
         //this genrates a tic every 500 ms
-        iced::time::every(std::time::Duration::from_millis(500)).map(|_| {
+        iced::time::every(Duration::from_millis(500)).map(|_| {
             Message::TICK
         })
     }
@@ -80,24 +119,26 @@ impl Application for Player {
     fn view(&mut self) -> Element<Self::Message> {
 
         // buttons
-        let play_button = Button::new(&mut self.play_button, Text::new("play")).on_press(Message::PLAY);
-        let pause_buttion = Button::new(&mut self.pause_button, Text::new("pause")).on_press(Message::PAUSE);
-        let current_song_text = Text::new(self.ap.get_current_song()).size(50);
-        // duration bar row
-        let seconds_played_txt = Text::new(self.ap.current_time().as_secs().to_string()).size(40);
-        let duration_bar = ProgressBar::new(0.0..=self.ap.duration_of_song().as_secs() as f32, self.ap.current_time().as_secs() as f32);
-        let total_duration_timer =Text::new(self.ap.duration_of_song().as_secs().to_string()).size(40);
 
+        let overall_col = Column::new()
+            .push(self.control_panel.view(&mut self.ap))
+            .push(self.panes.view());
+            //.push(file_content)
 
-        Column::new()
-            .push(Row::new()
-                .push(play_button)
-                .push(pause_buttion)
-                .push(current_song_text))
-            .push(Row::new().padding([5, 5, 15, 15])
-                .push(seconds_played_txt)
-                .push(duration_bar)
-                .push(total_duration_timer))
+        Container::new(overall_col).width(Length::Fill)
+            .height(Length::Fill)
+            .padding(10)
             .into()
+    }
+}
+
+impl container::StyleSheet for Pane {
+    fn style(&self) -> container::Style {
+        container::Style {
+            background: Some(Background::Color(Color::from_rgb(1.0,1.0,1.0))),
+            border_width: 2.0,
+            border_color: Color::from_rgb(0.7, 0.7, 0.7),
+            ..Default::default()
+        }
     }
 }
