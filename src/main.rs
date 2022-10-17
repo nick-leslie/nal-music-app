@@ -10,3 +10,4 @@ use crate::UI::application::Player;
 fn main()  {
     Player::run(Settings::default()).expect("something went wrong");
 }
+
