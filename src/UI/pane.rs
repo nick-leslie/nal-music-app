@@ -1,4 +1,5 @@
 use std::borrow::{Borrow, BorrowMut};
+use std::cell::RefCell;
 use std::io::ErrorKind;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -18,6 +19,7 @@ use crate::UI::controls_widget::ControlPanel;
 use crate::UI::file_widget::{directory_graphic, File_Graphic};
 use crate::UI::pane::PaneState::controlsPane;
 use crate::UI::playlist_widget::PlaylistWidget;
+use crate::audio::playlist::Playlist;
 
 enum PaneState {
     controlsPane,
@@ -72,7 +74,7 @@ pub struct Pane {
 }
 
 impl Pane {
-    pub fn new(playlist: Vec<Song>) -> Pane{
+    pub fn new(playlist: Rc<RefCell<Playlist>>) -> Pane{
         let (mut pane_state,first_pane)  = pane_grid::State::new(
             potential_content {
                 dire_graphic:Some(directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string())),

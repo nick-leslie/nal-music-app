@@ -29,11 +29,11 @@ impl Song {
            current_duration: Duration::from_secs(0)
        })
    }
-    pub fn get_song_path(&self) -> &str {
-        self.song_path.as_str()
+    pub fn get_song_path(&self) -> String {
+        self.song_path.clone()
     }
-    pub fn get_song_name(&self) -> &str {
-        self.song_name.as_str()
+    pub fn get_song_name(&self) -> String {
+        self.song_name.clone()
     }
     pub fn get_total_duration(&self) -> Duration{
         self.total_duration
