@@ -12,7 +12,7 @@ use iced_native::{Command, Renderer};
 use iced_native::user_interface::State;
 use iced_native::widget::pane_grid;
 use iced_native::widget::pane_grid::{Axis, state};
-use crate::audio::song::Song;
+use crate::audio::song::SongInfo;
 use crate::event_codes::Message;
 use crate::AudioPlayer;
 use crate::UI::controls_widget::ControlPanel;
@@ -57,7 +57,7 @@ impl potential_content {
         }
         false
     }
-    pub fn update_playlist(&mut self,ap:&mut AudioPlayer) -> bool {
+    pub fn update_playlist(&mut self,ap: &mut AudioPlayer) -> bool {
         if self.playlist_graphic.is_some() {
             let mut playlist = self.playlist_graphic.take().unwrap();
             playlist.match_ap(ap);

@@ -7,7 +7,7 @@ use iced::{Column, Element, Text};
 use iced::keyboard::KeyCode::V;
 use iced_native::widget::button::update;
 use crate::audio::playlist::Playlist;
-use crate::audio::song::Song;
+use crate::audio::song::SongInfo;
 use crate::AudioPlayer;
 use crate::event_codes::Message;
 
@@ -36,8 +36,8 @@ impl PlaylistWidget {
         }
         col.into()
     }
-    pub fn add_song(&mut self,s:Song) { ;
-        self.playlist_mut().add_song(s);
+    pub fn add_song(&mut self,s: SongInfo) { ;
+        self.playlist_mut().add_song_info(s);
     }
     pub fn match_ap(&mut self,ap:&mut AudioPlayer) {
         println!("should be matching");

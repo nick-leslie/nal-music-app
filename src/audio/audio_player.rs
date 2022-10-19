@@ -11,13 +11,16 @@ use std::time::Duration;
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Source};
 use crate::file_io;
 use mp3_duration;
-use std::sync::mpsc;
+use std::sync::{Arc, mpsc};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, Sender, SyncSender};
 use iced::window::icon::Error::DimensionsMismatch;
-use crate::audio::song::Song;
+use rodio::source::ChannelVolume;
+use crate::audio::song::SongInfo;
 use crate::event_codes::Message;
 use crate::audio::playlist;
 use crate::audio::playlist::Playlist;
+use crate::audio::song_source::SongSource;
 
 pub struct AudioPlayer {
     sink:rodio::Sink,
@@ -25,6 +28,8 @@ pub struct AudioPlayer {
     stream_handle:OutputStreamHandle,
     song_queue:Rc<RefCell<Playlist>>,
     sender:SyncSender<Message>,
+    //TODO make this one arc usize that we use to represent the number of items in queue
+    current_done_signal:Option<Arc<AtomicUsize>>
 }
 
 impl AudioPlayer {
@@ -36,10 +41,22 @@ impl AudioPlayer {
             stream_handle,
             song_queue:Rc::new(RefCell::new(Playlist::new())),
             sender,
+            current_done_signal: None
         }
     }
-    pub fn play_sink(self:&Self) {
+    pub fn play_sink(&mut self) {
         println!("number of tracks:{}",self.sink.len());
+        if self.sink.len() == 0 {
+            let mut song= self.playlist_mut().give_next_song();
+            match song{
+                Some(mut s) => {
+                    let (source,done_signal) = s.give_source();
+                    self.sink.append(source);
+                    self.current_done_signal = Some(done_signal);
+                },
+                None => {}
+            }
+        }
         self.sink.play();
     }
     pub fn pause_sink(self:&Self) {
@@ -47,10 +64,10 @@ impl AudioPlayer {
     }
     //this func adds a audio file from a given path
     pub fn add_song_from_path(&mut self, path: String) {
-        self.add_song(Song::new(path).expect("failed to unwrap song"));
+        self.add_song(SongInfo::new(path).expect("failed to unwrap song"));
     }
 
-    pub fn add_song(&mut self,s:Song) {
+    pub fn add_song(&mut self,s: SongInfo) {
 
         let mut file = match file_io::load_file(s.get_song_path().parse().unwrap()) {
             Ok(t) => t,
@@ -67,14 +84,17 @@ impl AudioPlayer {
 
 
         let sender = self.sender.clone();
-        let source = decoder.periodic_access(Duration::from_secs(1),move |_| {
+        let source = decoder.periodic_access(Duration::from_secs(1),move |src|
+            {
             sender.send(Message::SECOND_ELAPSED).expect("TODO: panic message");
-        });
+        }).convert_samples();
         if self.sink.len() == 0 {
             self.sink.pause();
         }
-        self.sink.append(source);
-        self.song_queue.as_ref().borrow_mut().add_song(s);
+        //self.sink.append(source);
+        self.playlist_mut().add_song_info(s);
+        self.playlist_mut().add_song(SongSource::new(source));
+        //self.song_queue.as_ref().borrow_mut().add_song_info(s);
         println!("{}",self.playlist_len())
     }
 
@@ -121,10 +141,26 @@ impl AudioPlayer {
         if self.playlist_len() > 0 {
             self.playlist_mut().add_second();
             println!("current second:{} current song:{}", self.playlist().get_current_song().get_current_duration().as_secs(), self.playlist().get_current_song().get_song_name());
-            if self.sink.len() < self.playlist_len() {
-                self.playlist_mut().remove_first();
-                println!("{}", self.playlist_len())
+            //TODO refactor this to not use match and isntead just have one Arc<usize> the length of the queue
+            match self.current_done_signal.take() {
+                Some(done_signal) => {
+                    let is_done = done_signal.load(Ordering::Relaxed);
+                    if is_done == 0 {
+                        println!("removing for some reason");
+                        self.playlist_mut().remove_first();
+                        self.play_sink();
+                        println!("{}", self.playlist_len())
+                    } else {
+                        self.current_done_signal = Some(done_signal);
+                    }
+                }
+                None => {}
             }
+            // if self.sink.len() < self.playlist_len() {
+            //     println!("removing for some reason");
+            //     self.playlist_mut().remove_first();
+            //     println!("{}", self.playlist_len())
+            // }
         }
     }
 }
