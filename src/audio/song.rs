@@ -3,12 +3,14 @@ use std::fs::File;
 use std::io::BufReader;
 use std::ops::Add;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
 use std::time::Duration;
-use rodio::Decoder;
+use rodio::{Decoder, Sample, Source, source};
 use crate::file_io;
 use crate::file_io::load_file;
 #[derive(Clone)]
-pub struct Song {
+pub struct SongInfo {
     song_name:String,
     song_path:String,
     total_duration:Duration,
@@ -16,13 +18,13 @@ pub struct Song {
 }
 
 
-impl Song {
-   pub fn new(path:String) -> Result<Song,String> {
+impl SongInfo {
+   pub fn new(path:String) -> Result<SongInfo,String> {
        let path_clone = path.clone();
        let p = Path::new(path_clone.as_str());
        let total_duration = mp3_duration::from_path(path.clone()).unwrap();
        //TODO this os string stuff looks jank so look into other solutions or if it matters
-       Ok(Song {
+       Ok(SongInfo {
            song_name: p.file_name().unwrap().to_os_string().to_str().unwrap().to_string(),
            song_path:path.to_string(),
            total_duration,
