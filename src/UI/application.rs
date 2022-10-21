@@ -57,6 +57,7 @@ impl Application for Player {
             },
             //this handles ticks
             Message::TICK => {
+                self.ap.done_check();
                 match self.receiver.try_recv() {
                     Ok(m) => {
                         match m {
@@ -103,6 +104,9 @@ impl Application for Player {
                 self.panes.panes.swap(&pane, &target);
             }
             Message::PaneDragged(_) => {}
+            Message::ReArrange(target,loc) =>  {
+                self.ap.playlist_mut().rearrange_playlist(target,loc)
+            }
             _ => ()
         }
         Command::none()

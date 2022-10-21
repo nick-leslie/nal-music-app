@@ -13,13 +13,10 @@ use crate::event_codes::Message;
 
 
 
-//TODO mutextes frezzes the entire UI audio thread still works
-//TODO go back to the old method
 
 pub struct PlaylistWidget {
     //TODO figure out how to sync this up with the song_queue in the audio_player
     songs:Rc<RefCell<Playlist>>
-    //TODO potentaly store an arc reffrence
 }
 
 impl PlaylistWidget {
@@ -28,6 +25,7 @@ impl PlaylistWidget {
             songs:play_list
         }
     }
+    //TODO dont display first element
     pub fn view(&mut self) -> Element<Message> {
         let mut col = Column::new();
         for song in self.songs.as_ref().borrow_mut().vec_ref().iter() {

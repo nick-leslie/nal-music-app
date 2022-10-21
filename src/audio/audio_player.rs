@@ -137,30 +137,34 @@ impl AudioPlayer {
             "no song playing".to_string()
         }
     }
+    //TODO we arnt proporly marking song as doen when swaping
     pub fn elapsed_second(&mut self) {
         if self.playlist_len() > 0 {
             self.playlist_mut().add_second();
             println!("current second:{} current song:{}", self.playlist().get_current_song().get_current_duration().as_secs(), self.playlist().get_current_song().get_song_name());
-            //TODO refactor this to not use match and isntead just have one Arc<usize> the length of the queue
-            match self.current_done_signal.take() {
-                Some(done_signal) => {
-                    let is_done = done_signal.load(Ordering::Relaxed);
-                    if is_done == 0 {
-                        println!("removing for some reason");
-                        self.playlist_mut().remove_first();
-                        self.play_sink();
-                        println!("{}", self.playlist_len())
-                    } else {
-                        self.current_done_signal = Some(done_signal);
-                    }
-                }
-                None => {}
-            }
+            //TODO refactor this to not use match and instead just have one Arc<usize> the length of the queue
+
             // if self.sink.len() < self.playlist_len() {
             //     println!("removing for some reason");
             //     self.playlist_mut().remove_first();
             //     println!("{}", self.playlist_len())
             // }
+        }
+    }
+    pub fn done_check(&mut self) {
+        match self.current_done_signal.take() {
+            Some(done_signal) => {
+                let is_done = done_signal.load(Ordering::Relaxed);
+                if is_done == 0 {
+                    println!("removing for some reason");
+                    self.playlist_mut().remove_first();
+                    self.play_sink();
+                    println!("{}", self.playlist_len())
+                } else {
+                    self.current_done_signal = Some(done_signal);
+                }
+            }
+            None => {}
         }
     }
 }

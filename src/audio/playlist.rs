@@ -2,7 +2,7 @@ use std::path::Iter;
 use rodio::{Sample, Source};
 use crate::audio::song::SongInfo;
 use crate::audio::song_source::SongSource;
-
+//TODO bug on thrid play could be to do with swaping
 pub struct Playlist {
     song_info_queue: Vec<SongInfo>,
     song_queue: Vec<SongSource<f32>>
@@ -30,6 +30,7 @@ impl Playlist {
         }
         None
     }
+    //TODO for what ever reason this is not the right info
     pub fn get_current_song(&self) -> &SongInfo {
         &self.song_info_queue[0]
     }
@@ -46,6 +47,25 @@ impl Playlist {
     }
     pub fn vec_ref(&mut self) -> &Vec<SongInfo> {
         &self.song_info_queue
+    }
+
+    //TODO this is causing issues its probobly with how I am re arranging the playlist
+    pub fn rearrange_playlist(&mut self, target_song:usize, mut move_location:usize) {
+        //TODO all of this is bad think of a better way to do this
+        if move_location > self.song_queue.len() - 1 {
+            move_location = self.song_queue.len() - 1;
+        }
+        let song_src = self.song_queue.remove(target_song);
+        self.song_queue.insert(move_location, song_src);
+
+        //TODO I think we need to use the -1 becuse we still need to use the song info through the duration of the song so in throry song info queue could be 1 longer than
+        if self.song_info_queue.len() > self.song_queue.len() {
+            let song_info = self.song_info_queue.remove(target_song+1);
+            self.song_info_queue.insert(move_location+1, song_info)
+        } else if self.song_queue.len() == self.song_info_queue.len() {
+            let song_info = self.song_info_queue.remove(target_song);
+            self.song_info_queue.insert(move_location, song_info)
+        }
     }
     pub fn vec_ref_mut(&mut self) -> &mut Vec<SongInfo> {
         &mut self.song_info_queue

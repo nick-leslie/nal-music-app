@@ -12,6 +12,7 @@ pub enum Message {
     FILE_INTERACTION(String),
     PaneDragged(pane_grid::DragEvent),
     PaneResized(pane_grid::ResizeEvent),
+    ReArrange(usize,usize)
     //TODO playlist reorder command
 
 }
