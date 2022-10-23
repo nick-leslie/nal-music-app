@@ -6,7 +6,7 @@ use iced::{Application, Background, Button, button, Color, Column, Command, cont
 use iced::pane_grid::Content;
 use iced::pure::{column, row, scrollable, widget};
 use crate::{AudioPlayer, event_codes, file_io};
-use crate::audio::song::SongInfo;
+use crate::audio::song_info::SongInfo;
 use crate::event_codes::Message;
 use crate::file_io::{get_dir_parent, is_song};
 use crate::UI::file_widget::{directory_graphic, File_Graphic};
@@ -93,6 +93,9 @@ impl Application for Player {
                         }
                     }
                 }
+            }
+            Message::CHANGE_VOL(vol) => {
+                self.ap.set_vol(vol)
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.panes.panes.resize(&split, ratio);

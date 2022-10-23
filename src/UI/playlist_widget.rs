@@ -7,7 +7,7 @@ use iced::{Column, Element, Text};
 use iced::keyboard::KeyCode::V;
 use iced_native::widget::button::update;
 use crate::audio::playlist::Playlist;
-use crate::audio::song::SongInfo;
+use crate::audio::song_info::SongInfo;
 use crate::AudioPlayer;
 use crate::event_codes::Message;
 
@@ -25,10 +25,11 @@ impl PlaylistWidget {
             songs:play_list
         }
     }
-    //TODO dont display first element
     pub fn view(&mut self) -> Element<Message> {
+        let mut playlist_ref = self.songs.as_ref().borrow_mut();;
         let mut col = Column::new();
-        for song in self.songs.as_ref().borrow_mut().vec_ref().iter() {
+        //we use skip 1 to skip the first element of the list bc thats displayed in the control bar
+        for song in playlist_ref.vec_ref().iter().skip(1) {
             let song_txt = Text::new(song.get_song_name().to_string());
             col = col.push(song_txt)
         }

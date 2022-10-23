@@ -9,6 +9,7 @@ pub enum Message {
     SECOND_ELAPSED,
     NONE,
     TICK,
+    CHANGE_VOL(f32),
     FILE_INTERACTION(String),
     PaneDragged(pane_grid::DragEvent),
     PaneResized(pane_grid::ResizeEvent),

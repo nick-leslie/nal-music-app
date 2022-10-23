@@ -1,5 +1,6 @@
 use std::borrow::BorrowMut;
 use std::cell::{Cell, Ref, RefCell, RefMut};
+use std::ffi::c_void;
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader, sink};
@@ -16,7 +17,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, Sender, SyncSender};
 use iced::window::icon::Error::DimensionsMismatch;
 use rodio::source::ChannelVolume;
-use crate::audio::song::SongInfo;
+use crate::audio::song_info::SongInfo;
 use crate::event_codes::Message;
 use crate::audio::playlist;
 use crate::audio::playlist::Playlist;
@@ -29,19 +30,22 @@ pub struct AudioPlayer {
     song_queue:Rc<RefCell<Playlist>>,
     sender:SyncSender<Message>,
     //TODO make this one arc usize that we use to represent the number of items in queue
-    current_done_signal:Option<Arc<AtomicUsize>>
+    current_done_signal:Option<Arc<AtomicUsize>>,
+    volume:f32
 }
 
 impl AudioPlayer {
     pub fn new(sender:SyncSender<Message>) -> AudioPlayer {
         let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
+
         AudioPlayer {
             sink:rodio::Sink::try_new(&stream_handle).unwrap(),
             stream:_stream,
             stream_handle,
             song_queue:Rc::new(RefCell::new(Playlist::new())),
             sender,
-            current_done_signal: None
+            current_done_signal: None,
+            volume: 1.0 //for now set it to 1.0 might be something to serialize
         }
     }
     pub fn play_sink(&mut self) {
@@ -59,6 +63,15 @@ impl AudioPlayer {
         }
         self.sink.play();
     }
+    pub fn set_vol(&mut self,vol: f32) {
+        self.volume = vol;
+        self.sink.set_volume(self.volume);
+    }
+
+    pub fn get_vol(&self) -> f32 {
+        self.volume
+    }
+
     pub fn pause_sink(self:&Self) {
         self.sink.pause();
     }
@@ -101,21 +114,26 @@ impl AudioPlayer {
     pub fn queue_len(&self) -> usize{
         self.sink.len()
     }
+
     pub fn playlist_len(&self) -> usize {
         self.song_queue.as_ref().borrow().get_len()
     }
+
     pub fn playlist_mut(&mut self) -> RefMut<Playlist> {
         self.song_queue.as_ref().borrow_mut()
     }
+
     pub fn playlist(&self) -> Ref<Playlist> {
         self.song_queue.as_ref().borrow()
     }
+
     pub fn duration_of_song(&self) -> Duration {
         if self.playlist_len() > 0 {
             self.playlist().get_current_song().get_total_duration()
         } else {
             Duration::from_secs(0)
         }    }
+
     pub fn current_time(&self) -> Duration {
         if self.playlist_len() > 0 {
             self.playlist().get_current_song().get_current_duration()
@@ -123,12 +141,15 @@ impl AudioPlayer {
             Duration::from_secs(0)
         }
     }
+
     pub fn is_paused(&self) -> bool{
         self.sink.is_paused()
     }
+
     pub fn get_play_list(&mut self) -> Rc<RefCell<Playlist>>{
         self.song_queue.clone()
     }
+
     pub fn get_current_song(&self) -> String {
         return if self.playlist_len() > 0 {
             let song_name = self.playlist().get_current_song().get_song_name();
@@ -151,6 +172,7 @@ impl AudioPlayer {
             // }
         }
     }
+
     pub fn done_check(&mut self) {
         match self.current_done_signal.take() {
             Some(done_signal) => {

@@ -12,7 +12,7 @@ use iced_native::{Command, Renderer};
 use iced_native::user_interface::State;
 use iced_native::widget::pane_grid;
 use iced_native::widget::pane_grid::{Axis, state};
-use crate::audio::song::SongInfo;
+use crate::audio::song_info::SongInfo;
 use crate::event_codes::Message;
 use crate::AudioPlayer;
 use crate::UI::controls_widget::ControlPanel;

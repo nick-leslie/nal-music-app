@@ -1,6 +1,6 @@
 use std::path::Iter;
 use rodio::{Sample, Source};
-use crate::audio::song::SongInfo;
+use crate::audio::song_info::SongInfo;
 use crate::audio::song_source::SongSource;
 //TODO bug on thrid play could be to do with swaping
 pub struct Playlist {
