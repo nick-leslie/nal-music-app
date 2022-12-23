@@ -6,6 +6,7 @@ use crate::audio::song_source::SongSource;
 pub struct Playlist {
     song_info_queue: Vec<SongInfo>,
     song_queue: Vec<SongSource<f32>>
+
 }
 
 
@@ -30,9 +31,12 @@ impl Playlist {
         }
         None
     }
-    //TODO for what ever reason this is not the right info
+    //TODO make any get opporation an option
     pub fn get_current_song(&self) -> &SongInfo {
         &self.song_info_queue[0]
+    }
+    pub fn get_song_info(&self, i:usize) -> Option<&SongInfo> {
+        self.song_info_queue.get(i)
     }
     pub fn get_len(&self) -> usize {
         self.song_info_queue.len()

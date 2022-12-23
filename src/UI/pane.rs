@@ -33,8 +33,7 @@ pub struct potential_content {
 
 impl potential_content {
     pub fn view(&mut self) -> Element<Message> {
-        let testing_text = Text::new("yeet".to_string()).size(40);
-        let mut final_element:Element<Message> = Column::new().push(testing_text.clone()).into();
+        let mut final_element:Element<Message> = Column::new().into();
 
         if self.dire_graphic.is_some() {
             match self.dire_graphic.as_mut() {
@@ -57,36 +56,34 @@ impl potential_content {
         }
         false
     }
-    pub fn update_playlist(&mut self,ap: &mut AudioPlayer) -> bool {
-        if self.playlist_graphic.is_some() {
-            let mut playlist = self.playlist_graphic.take().unwrap();
-            playlist.match_ap(ap);
-            self.playlist_graphic = Some(playlist);
-            return true;
-        }
-        false
+    pub fn get_playlist_widget(&self) -> &Option<PlaylistWidget> {
+        &self.playlist_graphic
     }
 }
-
+//TODO store
 pub struct Pane {
     pub panes: pane_grid::State<potential_content>,
     panes_created: usize,
+    dir_pane:pane_grid::Pane,
+    playlist_pane:pane_grid::Pane
 }
 
 impl Pane {
     pub fn new(playlist: Rc<RefCell<Playlist>>) -> Pane{
-        let (mut pane_state,first_pane)  = pane_grid::State::new(
+        let (mut pane_state,dir_pane)  = pane_grid::State::new(
             potential_content {
                 dire_graphic:Some(directory_graphic::new("/home/nickl/Music/bigPlaylist".to_string())),
                 playlist_graphic: None
             });
-            pane_state.split(Axis::Vertical,&first_pane,potential_content {
+            let (playlist_pane, split) = pane_state.split(Axis::Vertical,&dir_pane,potential_content {
                 dire_graphic:None,
                 playlist_graphic:Some(PlaylistWidget::new(playlist))
-            });
+            }).unwrap();
         Pane {
             panes:pane_state,
-            panes_created: 1
+            panes_created: 1,
+            dir_pane,
+            playlist_pane
         }
     }
     pub fn view(&mut self) -> Element<Message> {
@@ -95,8 +92,14 @@ impl Pane {
             PaneGrid::new(&mut self.panes, |pane, graphics| {
                 Content::new(Container::new(graphics.view()))
             })
-                .on_drag(Message::PaneDragged)
+                //.on_drag(Message::PaneDragged)
                 .on_resize(10, Message::PaneResized);
         Column::new().push(pane_grid).into()
+    }
+    pub fn get_dir_pane(&self) -> pane_grid::Pane {
+        self.dir_pane
+    }
+    pub fn get_playlist_content(&self) -> &potential_content {
+        self.panes.get(&self.playlist_pane).unwrap()
     }
 }

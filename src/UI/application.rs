@@ -84,13 +84,6 @@ impl Application for Player {
                 } else {
                     if is_song(path.clone()) {
                         self.ap.add_song_from_path(path.clone());
-                        //TODO fix this this is bad desine becuse what if you had 1 in 100 panes
-                        // //you can only get away with this cause its 2
-                        for panes_and_content in self.panes.panes.iter_mut() {
-                            if panes_and_content.1.update_playlist(&mut self.ap) {
-                                break;
-                            }
-                        }
                     }
                 }
             }
@@ -104,9 +97,14 @@ impl Application for Player {
                                      pane,
                                      target,
                                  }) => {
+                let content_ref = self.panes.get_playlist_content().get_playlist_widget().as_ref();
+                let first_loc = content_ref.unwrap().get_panegrid().get(&pane).unwrap().get_loc();
+                let second_loc = content_ref.unwrap().get_panegrid().get(&target).unwrap().get_loc();
+
                 self.panes.panes.swap(&pane, &target);
             }
-            Message::PaneDragged(_) => {}
+            Message::PaneDragged(_) => {println!("draging")}
+            Message::PaneClicked(_) => {println!("clicked")}
             Message::ReArrange(target,loc) =>  {
                 self.ap.playlist_mut().rearrange_playlist(target,loc)
             }
